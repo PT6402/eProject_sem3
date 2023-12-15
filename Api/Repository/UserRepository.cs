@@ -1,6 +1,8 @@
 ﻿using Api.Data_helper;
 using Api.Interface.IRepo;
 using Api.Interface.IService;
+using Api.Service.Mail;
+using Api.Service.SMS;
 using AutoMapper;
 using Lib.Dto;
 using Lib.Dto.User.Repo;
@@ -13,15 +15,19 @@ namespace Api.Repository
     {
         private readonly DatabaseContext _db;
         private readonly IMail _mail;
+        private readonly ISMS _sms;
         private readonly IMapper _mapper;
         private readonly IPassword _password;
+        private readonly IDateTimeProvider _time;
 
-        public UserRepository(DatabaseContext db, IMail mail, IMapper mapper, IPassword password)
+        public UserRepository(DatabaseContext db, IMail mail, IMapper mapper, IPassword password, IDateTimeProvider time, ISMS sms)
         {
             _db = db;
             _mail = mail;
             _mapper = mapper;
             _password = password;
+            _time = time;
+            _sms = sms;
         }
 
         public async Task<UserDto?> GetByPhone(string phone)
@@ -41,6 +47,25 @@ namespace Api.Repository
                 return null!;
             }
         }
+
+        public async Task<UserDto?> GetByEmail(string email)
+        {
+            try
+            {
+                var user = await _db.Users.FirstOrDefaultAsync(x => x.Email == email);
+                if (user is null)
+                {
+                    return null!;
+                }
+                return _mapper.Map<UserDto>(user);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+                return null!;
+            }
+        }
+
         public async Task<DtoResult<UserDto>> Create(UserDto model)
         {
             try
@@ -141,5 +166,129 @@ namespace Api.Repository
                 return false;
             }
         }
+
+        public async Task<bool> SendMailResetPassword(string toEmail, int UserId)
+        {
+            var user = await _db.Users.FirstOrDefaultAsync(x => x.Id == UserId);
+            if (user is null)
+            {
+                return false;
+            }
+
+            //
+            Random r = new();
+            string random_digit = r.Next(0, 1000000).ToString("000000");
+
+            //
+            user.PasswordReset = random_digit;
+            user.ResetExpires = _time.UtcNow.AddDays(1);
+            user.MethodReset = 0;
+            await _db.SaveChangesAsync();
+
+            //
+            TemplateEmail template = new()
+            {
+                ProductName = "Nexus",
+                UserName = user.FullName,
+                CodeReset = random_digit
+            };
+            string body = template.TemplateEmailReset();
+            EmailRequest sendMail = new()
+            {
+                To = toEmail,
+                Subject = "email to reset password",
+                Body = body
+            };
+            return _mail.SendEmail(sendMail);
+        }
+        public async Task<bool> SendSMSResetPassword(string toPhone, int UserId)
+        {
+            var user = await _db.Users.FirstOrDefaultAsync(x => x.Id == UserId);
+            if (user is null)
+            {
+                return false;
+            }
+
+            //
+            Random r = new();
+            string random_digit = r.Next(0, 1000000).ToString("000000");
+
+            //
+            user.PasswordReset = random_digit;
+            user.ResetExpires = _time.UtcNow.AddDays(1);
+            user.MethodReset = 1;
+            await _db.SaveChangesAsync();
+
+            //
+
+
+            SMSRequest sendSMS = new()
+            {
+                To = toPhone,
+                Body = random_digit
+            };
+            return await _sms.SendSMS(sendSMS);
+        }
+
+        public async Task<DtoResult<UserDto>> ResetPassword(int UserId, string Password, string Code)
+        {
+            try
+            {
+                var user = _db.Users.FirstOrDefault(x => x.Id == UserId);
+                if (user is null)
+                {
+                    return new()
+                    {
+                        Status = false,
+                        Message = "User not found",
+                    };
+                }
+
+                if (user.PasswordReset != Code)
+                {
+                    return new()
+                    {
+                        Status = false,
+                        Message = "code invalid"
+                    };
+                }
+
+                if (user.ResetExpires < _time.UtcNow)
+                {
+                    return new()
+                    {
+                        Status = false,
+                        Message = "code time expired"
+                    };
+                }
+
+                var hash = _password.CreatePassword(Password);
+                //[pass]
+                user.PasswordHash = hash.PasswordHash;
+                user.PasswordSalt = hash.PasswordSalt;
+
+                //[reset-pass]
+                user.ResetExpires = null;
+                user.PasswordReset = string.Empty;
+                user.MethodReset = null;
+                await _db.SaveChangesAsync();
+                return new()
+                {
+                    Status = true,
+                    Message = "change password success",
+                    Model = _mapper.Map<UserDto>(user)
+                };
+            }
+            catch (Exception e)
+            {
+                return new()
+                {
+                    Status = false,
+                    Message = e.Message
+                };
+            }
+        }
+
+
     }
 }
