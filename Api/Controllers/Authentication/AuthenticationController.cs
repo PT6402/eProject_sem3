@@ -33,7 +33,7 @@ namespace Api.Controllers.Authentication
                 return BadRequest(check.Message);
             }
 
-            return Ok(check.Model!.Email);
+            return Ok(check.Model!.Phone);
         }
 
         [HttpPost]

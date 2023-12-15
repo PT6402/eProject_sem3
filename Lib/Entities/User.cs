@@ -11,7 +11,9 @@ namespace Lib.Entities
         public string FullName { get; set; } = null!;
         public string Phone { get; set; } = null!;
         public string? Email { get; set; }
-        public string? Address { get; set; }
+        public Addresses? Addresses { get; set; }
+        public int? Addresses_Id { get; set; }
+        //
         public byte[] PasswordHash { get; set; } = new byte[32];
         public byte[] PasswordSalt { get; set; } = new byte[32];
         public string Role { get; set; } = null!;

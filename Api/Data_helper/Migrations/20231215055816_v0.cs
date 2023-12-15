@@ -12,7 +12,7 @@ namespace Api.Data_helper.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "tbAddress_store",
+                name: "tbAddress",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
@@ -24,7 +24,7 @@ namespace Api.Data_helper.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_tbAddress_store", x => x.Id);
+                    table.PrimaryKey("PK_tbAddress", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -85,17 +85,40 @@ namespace Api.Data_helper.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "tbAddress_store",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Addresses_Id = table.Column<int>(type: "int", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_tbAddress_store", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Store_Address",
+                        column: x => x.Addresses_Id,
+                        principalTable: "tbAddress",
+                        principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
                 name: "tbTP_contractor",
                 columns: table => new
                 {
                     Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Address = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Addresses_Id = table.Column<int>(type: "int", nullable: true),
                     Phone = table.Column<string>(type: "nvarchar(max)", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_tbTP_contractor", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Contractor_Address",
+                        column: x => x.Addresses_Id,
+                        principalTable: "tbAddress",
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -104,8 +127,10 @@ namespace Api.Data_helper.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    Address = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    FullName = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Phone = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Email = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Addresses_Id = table.Column<int>(type: "int", nullable: true),
                     PasswordHash = table.Column<byte[]>(type: "varbinary(max)", nullable: false),
                     PasswordSalt = table.Column<byte[]>(type: "varbinary(max)", nullable: false),
                     Role = table.Column<string>(type: "nvarchar(max)", nullable: false),
@@ -118,6 +143,11 @@ namespace Api.Data_helper.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_tbUser", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_User_Address",
+                        column: x => x.Addresses_Id,
+                        principalTable: "tbAddress",
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -327,6 +357,11 @@ namespace Api.Data_helper.Migrations
                 });
 
             migrationBuilder.CreateIndex(
+                name: "IX_tbAddress_store_Addresses_Id",
+                table: "tbAddress_store",
+                column: "Addresses_Id");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_tbDuration_Package_Id",
                 table: "tbDuration",
                 column: "Package_Id");
@@ -395,6 +430,16 @@ namespace Api.Data_helper.Migrations
                 name: "IX_tbStories_Product_Id",
                 table: "tbStories",
                 column: "Product_Id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_tbTP_contractor_Addresses_Id",
+                table: "tbTP_contractor",
+                column: "Addresses_Id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_tbUser_Addresses_Id",
+                table: "tbUser",
+                column: "Addresses_Id");
         }
 
         /// <inheritdoc />
@@ -438,6 +483,9 @@ namespace Api.Data_helper.Migrations
 
             migrationBuilder.DropTable(
                 name: "tbDuration");
+
+            migrationBuilder.DropTable(
+                name: "tbAddress");
 
             migrationBuilder.DropTable(
                 name: "tbPackage");

@@ -30,6 +30,24 @@ namespace Api.Data_helper.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<int?>("Addresses_Id")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Addresses_Id");
+
+                    b.ToTable("tbAddress_store");
+                });
+
+            modelBuilder.Entity("Lib.Entities.Addresses", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
                     b.Property<string>("Address_full")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -48,7 +66,7 @@ namespace Api.Data_helper.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("tbAddress_store");
+                    b.ToTable("tbAddress");
                 });
 
             modelBuilder.Entity("Lib.Entities.Connect_type", b =>
@@ -372,9 +390,8 @@ namespace Api.Data_helper.Migrations
                     b.Property<string>("Id")
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<string>("Address")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int?>("Addresses_Id")
+                        .HasColumnType("int");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -385,6 +402,8 @@ namespace Api.Data_helper.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("Addresses_Id");
 
                     b.ToTable("tbTP_contractor");
                 });
@@ -397,8 +416,8 @@ namespace Api.Data_helper.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("Address")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int?>("Addresses_Id")
+                        .HasColumnType("int");
 
                     b.Property<string>("Email")
                         .HasColumnType("nvarchar(max)");
@@ -440,7 +459,19 @@ namespace Api.Data_helper.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("Addresses_Id");
+
                     b.ToTable("tbUser");
+                });
+
+            modelBuilder.Entity("Lib.Entities.Address_store", b =>
+                {
+                    b.HasOne("Lib.Entities.Addresses", "Addresses")
+                        .WithMany("Address_stores")
+                        .HasForeignKey("Addresses_Id")
+                        .HasConstraintName("FK_Store_Address");
+
+                    b.Navigation("Addresses");
                 });
 
             modelBuilder.Entity("Lib.Entities.Duration", b =>
@@ -592,9 +623,38 @@ namespace Api.Data_helper.Migrations
                     b.Navigation("Product");
                 });
 
+            modelBuilder.Entity("Lib.Entities.TP_contractor", b =>
+                {
+                    b.HasOne("Lib.Entities.Addresses", "Addresses")
+                        .WithMany("TP_contractors")
+                        .HasForeignKey("Addresses_Id")
+                        .HasConstraintName("FK_Contractor_Address");
+
+                    b.Navigation("Addresses");
+                });
+
+            modelBuilder.Entity("Lib.Entities.User", b =>
+                {
+                    b.HasOne("Lib.Entities.Addresses", "Addresses")
+                        .WithMany("Users")
+                        .HasForeignKey("Addresses_Id")
+                        .HasConstraintName("FK_User_Address");
+
+                    b.Navigation("Addresses");
+                });
+
             modelBuilder.Entity("Lib.Entities.Address_store", b =>
                 {
                     b.Navigation("Employees");
+                });
+
+            modelBuilder.Entity("Lib.Entities.Addresses", b =>
+                {
+                    b.Navigation("Address_stores");
+
+                    b.Navigation("TP_contractors");
+
+                    b.Navigation("Users");
                 });
 
             modelBuilder.Entity("Lib.Entities.Connect_type", b =>

@@ -8,10 +8,8 @@ namespace Lib.Entities
     {
         [Key]
         public int Id { get; set; }
-        public string Address_full { get; set; } = null!;
-        public string Province { get; set; } = null!;
-        public string District { get; set; } = null!;
-        public string Ward { get; set; } = null!;
+        public Addresses? Addresses { get; set; }
+        public int? Addresses_Id { get; set; }
         public ICollection<Employee>? Employees { get; set; }
     }
 }

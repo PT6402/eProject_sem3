@@ -49,6 +49,7 @@ namespace Api.Data_helper
                 .HasForeignKey(x => x.Address_store_Id)
                 .HasConstraintName("FK_Emp_Address_store");
             });
+
             modelBuilder.Entity<Product>(entity =>
             {
                 entity
@@ -57,6 +58,7 @@ namespace Api.Data_helper
                 .HasForeignKey(x => x.Supplier_Id)
                 .HasConstraintName("FK_Product_Supplier");
             });
+
             modelBuilder.Entity<Stories>(entity =>
             {
                 entity
@@ -65,6 +67,7 @@ namespace Api.Data_helper
                 .HasForeignKey(x => x.Product_Id)
                 .HasConstraintName("FK_Product_Stories");
             });
+
             modelBuilder.Entity<Package>(entity =>
             {
                 entity
@@ -73,52 +76,56 @@ namespace Api.Data_helper
                 .HasForeignKey(x => x.Connect_type_Id)
                 .HasConstraintName("FK_Packages_Connect_type");
             });
+
             modelBuilder.Entity<Duration>(entity =>
-          {
-              entity
-              .HasOne(x => x.Package)
-              .WithMany(x => x.Durations)
-              .HasForeignKey(x => x.Package_Id)
-              .HasConstraintName("FK_Duration_Package");
-          });
+            {
+                entity
+                .HasOne(x => x.Package)
+                .WithMany(x => x.Durations)
+                .HasForeignKey(x => x.Package_Id)
+                .HasConstraintName("FK_Duration_Package");
+            });
+
             modelBuilder.Entity<Duration_detail>(entity =>
-          {
-              entity
-              .HasOne(x => x.Duration)
-              .WithMany(x => x.Duration_details)
-              .HasForeignKey(x => x.Duration_Id)
-              .HasConstraintName("FK_Duration_detail_Duration");
-          }); modelBuilder.Entity<Order>(entity =>
-          {
-              entity
-              .HasOne(x => x.Duration)
-              .WithMany(x => x.Orders)
-              .HasForeignKey(x => x.Duration_Id)
-              .HasConstraintName("FK_Order_Duration")
-              .OnDelete(DeleteBehavior.NoAction);
+            {
+                entity
+                .HasOne(x => x.Duration)
+                .WithMany(x => x.Duration_details)
+                .HasForeignKey(x => x.Duration_Id)
+                .HasConstraintName("FK_Duration_detail_Duration");
+            });
 
-              entity
-              .HasOne(x => x.Duration_detail)
-              .WithMany(x => x.Orders)
-              .HasForeignKey(x => x.Duration_detail_Id)
-              .HasConstraintName("FK_Order_Duration_detail")
-              .OnDelete(DeleteBehavior.NoAction);
+            modelBuilder.Entity<Order>(entity =>
+            {
+                entity
+                .HasOne(x => x.Duration)
+                .WithMany(x => x.Orders)
+                .HasForeignKey(x => x.Duration_Id)
+                .HasConstraintName("FK_Order_Duration")
+                .OnDelete(DeleteBehavior.NoAction);
+
+                entity
+                .HasOne(x => x.Duration_detail)
+                .WithMany(x => x.Orders)
+                .HasForeignKey(x => x.Duration_detail_Id)
+                .HasConstraintName("FK_Order_Duration_detail")
+                .OnDelete(DeleteBehavior.NoAction);
 
 
-              entity
-              .HasOne(x => x.TP_contractor)
-              .WithMany(x => x.Orders)
-              .HasForeignKey(x => x.TP_contractor_Id)
-              .HasConstraintName("FK_Order_TP_contractor")
-              .OnDelete(DeleteBehavior.NoAction);
+                entity
+                .HasOne(x => x.TP_contractor)
+                .WithMany(x => x.Orders)
+                .HasForeignKey(x => x.TP_contractor_Id)
+                .HasConstraintName("FK_Order_TP_contractor")
+                .OnDelete(DeleteBehavior.NoAction);
 
-              entity
-              .HasOne(x => x.Coupon)
-              .WithMany(x => x.Orders)
-              .HasForeignKey(x => x.Coupon_Id)
-              .HasConstraintName("FK_Order_Coupon")
-              .OnDelete(DeleteBehavior.NoAction);
-          });
+                entity
+                .HasOne(x => x.Coupon)
+                .WithMany(x => x.Orders)
+                .HasForeignKey(x => x.Coupon_Id)
+                .HasConstraintName("FK_Order_Coupon")
+                .OnDelete(DeleteBehavior.NoAction);
+            });
 
             modelBuilder.Entity<Payment>(entity =>
             {
@@ -128,6 +135,35 @@ namespace Api.Data_helper
                 .HasForeignKey(x => x.Order_Id)
                 .HasConstraintName("FK_Payment_Order");
             });
+
+            modelBuilder.Entity<User>(entity =>
+            {
+                entity
+                .HasOne(x => x.Addresses)
+                .WithMany(x => x.Users)
+                .HasForeignKey(x => x.Addresses_Id)
+                .HasConstraintName("FK_User_Address");
+            });
+
+            modelBuilder.Entity<Address_store>(entity =>
+            {
+                entity
+                .HasOne(x => x.Addresses)
+                .WithMany(x => x.Address_stores)
+                .HasForeignKey(x => x.Addresses_Id)
+                .HasConstraintName("FK_Store_Address");
+            });
+
+            modelBuilder.Entity<TP_contractor>(entity =>
+            {
+                entity
+                .HasOne(x => x.Addresses)
+                .WithMany(x => x.TP_contractors)
+                .HasForeignKey(x => x.Addresses_Id)
+                .HasConstraintName("FK_Contractor_Address");
+            });
+
+
 
         }
     }
