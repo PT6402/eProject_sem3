@@ -57,6 +57,9 @@ namespace Api.Controllers.Authentication
                               .AllowCredentials();
                     });
             });
+
+            // [COOKIE]
+            services.AddHttpContextAccessor();
             return services;
         }
     }

@@ -1,11 +1,14 @@
 ﻿using Api.Interface.IRepo;
 using Api.Interface.IService;
+using Api.Repository;
 using AutoMapper;
 using Lib.Dto.User.Ctrl.Req;
 using Lib.Dto.User.Ctrl.Res;
 using Lib.Dto.User.Repo;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
+using System.Security.Claims;
 
 namespace Api.Controllers.Authentication
 {
@@ -16,11 +19,17 @@ namespace Api.Controllers.Authentication
         private readonly IUserRepository _user;
         private readonly IMapper _mapper;
         private readonly IToken _token;
-        public AuthenticationController(IUserRepository user, IMapper mapper, IToken token)
+        private readonly IHttpContextAccessor _accessor;
+        public AuthenticationController(
+            IUserRepository user,
+            IMapper mapper,
+            IToken token,
+            IHttpContextAccessor accessor)
         {
             _user = user;
             _mapper = mapper;
             _token = token;
+            _accessor = accessor;
         }
 
         [HttpPost]
@@ -100,7 +109,7 @@ namespace Api.Controllers.Authentication
                     }
                     var formatPhone = string.Concat("+84", request.Input.AsSpan(1));
                     var check = await _user.SendSMSResetPassword(formatPhone, user.Id);
-                    if (!check)
+                    if (!check.Status)
                     {
                         return BadRequest("send sms fail");
                     }
@@ -113,7 +122,7 @@ namespace Api.Controllers.Authentication
         }
 
         [HttpPost]
-        [Route("change-pass")]
+        [Route("reset-pass")]
         public async Task<ActionResult> ResetPass(UserResetPass request)
         {
             if (request.MethodReset is not null)
@@ -121,25 +130,66 @@ namespace Api.Controllers.Authentication
                 UserDto? user;
                 if (request.MethodReset == 0)
                 {
-                     user = await _user.GetByEmail(request.Input);
+                    user = await _user.GetByEmail(request.Input);
                 }
                 else
                 {
                     user = await _user.GetByPhone(request.Input);
                 }
-                    if (user is null)
-                    {
-                        return BadRequest("user is not found");
-                    }
-                    var check = await _user.ResetPassword(user.Id, request.Password, request.Code);
-                    if (!check.Status)
-                    {
-                        return BadRequest(check.Message);
-                    }
-                    return Ok();
-                
+                if (user is null)
+                {
+                    return BadRequest("user is not found");
+                }
+                var check = await _user.ResetPassword(user.Id, request.Password, request.Code);
+                if (!check.Status)
+                {
+                    return BadRequest(check.Message);
+                }
+                return Ok();
+
             }
             return BadRequest("reset fail");
+        }
+
+        [HttpGet]
+        [Route("logout")]
+        [Authorize]
+        public async Task<ActionResult> Logout()
+        {
+            if (_accessor.HttpContext != null)
+            {
+                var userId = int.Parse( _accessor.HttpContext.User.FindFirstValue(ClaimTypes.Sid));
+
+                var user = await _user.GetById(userId)!;
+                if (user is null) {
+                    return BadRequest("user not found");
+                }
+                TokenDto updateToken = new() {
+                    RefreshToken = string.Empty,
+                    TokenCreated = null,
+                    TokenExpires = null,
+                    UserId = user.Id
+                };
+                await _user.UpdateToken(updateToken);
+                HttpContext.Response.Cookies.Delete("refreshToken");
+                return Ok("logout successfully!");
+            }
+            return BadRequest("logout fail");
+        }
+
+
+        [HttpPost]
+        [Route("verify-phone/{phone}")]
+        public async Task<ActionResult> VerifyPhone(string phone) {
+            var formatPhone = string.Concat("+84", phone.AsSpan(1));
+            var result = await _user.VerifyPhone(formatPhone);
+            if (!result.Status)
+            {
+                return BadRequest(result.Message);
+            }
+            else {
+                return Ok(result.Message);
+            }
         }
     }
 }

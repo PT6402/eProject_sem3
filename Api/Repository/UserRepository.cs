@@ -8,6 +8,7 @@ using Lib.Dto;
 using Lib.Dto.User.Repo;
 using Lib.Entities;
 using Microsoft.EntityFrameworkCore;
+using Twilio.Rest.Api.V2010.Account;
 
 namespace Api.Repository
 {
@@ -35,6 +36,24 @@ namespace Api.Repository
             try
             {
                 var user = await _db.Users.FirstOrDefaultAsync(x => x.Phone == phone);
+                if (user is null)
+                {
+                    return null!;
+                }
+                return _mapper.Map<UserDto>(user);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+                return null!;
+            }
+        }
+
+        public async Task<UserDto?> GetById(int userId)
+        {
+            try
+            {
+                var user = await _db.Users.FirstOrDefaultAsync(x => x.Id == userId);
                 if (user is null)
                 {
                     return null!;
@@ -201,12 +220,16 @@ namespace Api.Repository
             };
             return _mail.SendEmail(sendMail);
         }
-        public async Task<bool> SendSMSResetPassword(string toPhone, int UserId)
+        public async Task<DtoResult<MessageResource>> SendSMSResetPassword(string toPhone, int UserId)
         {
             var user = await _db.Users.FirstOrDefaultAsync(x => x.Id == UserId);
             if (user is null)
             {
-                return false;
+                return new()
+                {
+                    Status = false,
+                    Message = "user not found"
+                };
             }
 
             //
@@ -227,7 +250,9 @@ namespace Api.Repository
                 To = toPhone,
                 Body = random_digit
             };
-            return await _sms.SendSMS(sendSMS);
+
+            var result = await _sms.SendSMS(sendSMS);
+            return result;
         }
 
         public async Task<DtoResult<UserDto>> ResetPassword(int UserId, string Password, string Code)
@@ -288,7 +313,57 @@ namespace Api.Repository
                 };
             }
         }
+        public async Task<DtoResult<MessageResource>> VerifyPhone(string Phone)
+        {
+            try
+            {
 
+                Random r = new();
+                string random_digit = r.Next(0, 1000000).ToString("000000");
+
+                SMSRequest sendSMS = new()
+                {
+                    To = Phone,
+                    Body = random_digit
+                };
+
+                var result = await _sms.SendSMS(sendSMS);
+                if (!result.Status)
+                {
+                    return result;
+                }
+                else
+                {
+
+                    return new()
+                    {
+                        Status = true,
+                        Message = random_digit
+                    };
+                }
+
+            }
+            catch (Exception e)
+            {
+                return new()
+                {
+                    Status = false,
+                    Message = e.Message
+                };
+            }
+        }
+
+        /* public async Task<DtoResult<UserDto>> Update(UserDto model)
+         {
+             try
+             {
+                 var user = await _db.Users.FirstOrDefaultAsync(x => x.Id == model.Id);
+             }
+             catch (Exception e)
+             {
+
+             }
+         }*/
 
     }
 }

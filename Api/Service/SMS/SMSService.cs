@@ -1,4 +1,5 @@
 ﻿using Api.Interface.IService;
+using Lib.Dto;
 using Twilio;
 using Twilio.Rest.Api.V2010.Account;
 
@@ -13,8 +14,10 @@ namespace Api.Service.SMS
             _config = config;
         }
 
-        public async Task<bool> SendSMS(SMSRequest model)
+        public async Task<DtoResult<MessageResource>> SendSMS(SMSRequest model)
         {
+            try {
+            
             string accountSid = _config.GetSection("AccountSid").Value!;
             string authToken = _config.GetSection("AuthToken").Value!;
             string phone = _config.GetSection("TwilioPhoneNum").Value!;
@@ -22,18 +25,22 @@ namespace Api.Service.SMS
             TwilioClient.Init(accountSid, authToken);
 
             var message = await MessageResource.CreateAsync(
-
                 body: model.Body,
                 from: new Twilio.Types.PhoneNumber(phone),
                 to: new Twilio.Types.PhoneNumber(model.To)
-
                 );
-
-            if (!(message.Status == MessageResource.StatusEnum.Sent))
-            {
-            return false;
+                return new()
+                {
+                    Status = true,
+                    Message = "send sms successfully",
+                    Model = message
+                };
+            } catch (Exception e) {
+                return new() { 
+                Status= false, Message = e.Message  
+                };
             }
-                return true;
+
         }
     }
 }
