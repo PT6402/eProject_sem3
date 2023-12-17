@@ -15,5 +15,6 @@ namespace Lib.Entities
 
         public float Security_Deposit { get; set; }
         public ICollection<Package>? Packages { get; set; }
+        public ICollection<Product>? Products { get; set; }
     }
 }

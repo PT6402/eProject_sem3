@@ -12,6 +12,6 @@ namespace Lib.Entities
         public Addresses? Addresses { get; set; }
         public int? Addresses_Id { get; set; }
         public string Phone { get; set; } = null!;
-        public ICollection<Order>? Orders { get; set; }
+        public Order? Order { get; set; }
     }
 }

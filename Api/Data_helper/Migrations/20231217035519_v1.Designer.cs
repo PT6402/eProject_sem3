@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Api.Data_helper.Migrations
 {
     [DbContext(typeof(DatabaseContext))]
-    [Migration("20231215090248_v1")]
+    [Migration("20231217035519_v1")]
     partial class v1
     {
         /// <inheritdoc />
@@ -70,6 +70,30 @@ namespace Api.Data_helper.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("tbAddress");
+                });
+
+            modelBuilder.Entity("Lib.Entities.Call_charges", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<float>("Price")
+                        .HasColumnType("real");
+
+                    b.Property<string>("Unit")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("tbCall_charges");
                 });
 
             modelBuilder.Entity("Lib.Entities.Connect_type", b =>
@@ -142,7 +166,7 @@ namespace Api.Data_helper.Migrations
                     b.ToTable("tbDuration");
                 });
 
-            modelBuilder.Entity("Lib.Entities.Duration_detail", b =>
+            modelBuilder.Entity("Lib.Entities.Duration_callCharges", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -150,25 +174,19 @@ namespace Api.Data_helper.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<int?>("Call_charges_Id")
+                        .HasColumnType("int");
+
                     b.Property<int>("Duration_Id")
                         .HasColumnType("int");
 
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<float>("Price")
-                        .HasColumnType("real");
-
-                    b.Property<string>("Unit")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.HasKey("Id");
+
+                    b.HasIndex("Call_charges_Id");
 
                     b.HasIndex("Duration_Id");
 
-                    b.ToTable("tbDuration_detail");
+                    b.ToTable("tbDuration_callCharges");
                 });
 
             modelBuilder.Entity("Lib.Entities.Employee", b =>
@@ -224,10 +242,7 @@ namespace Api.Data_helper.Migrations
                     b.Property<int>("Coupon_Id")
                         .HasColumnType("int");
 
-                    b.Property<int>("Duration_Id")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Duration_detail_Id")
+                    b.Property<int>("Duration_callCharges_Id")
                         .HasColumnType("int");
 
                     b.Property<string>("Status")
@@ -247,13 +262,13 @@ namespace Api.Data_helper.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Coupon_Id");
+                    b.HasIndex("Coupon_Id")
+                        .IsUnique();
 
-                    b.HasIndex("Duration_Id");
+                    b.HasIndex("Duration_callCharges_Id");
 
-                    b.HasIndex("Duration_detail_Id");
-
-                    b.HasIndex("TP_contractor_Id");
+                    b.HasIndex("TP_contractor_Id")
+                        .IsUnique();
 
                     b.ToTable("tbOrders");
                 });
@@ -301,7 +316,8 @@ namespace Api.Data_helper.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Order_Id");
+                    b.HasIndex("Order_Id")
+                        .IsUnique();
 
                     b.ToTable("tbPayment");
                 });
@@ -314,7 +330,7 @@ namespace Api.Data_helper.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("Connect_type_IdId")
+                    b.Property<int>("Connect_type_Id")
                         .HasColumnType("int");
 
                     b.Property<string>("Name")
@@ -333,7 +349,7 @@ namespace Api.Data_helper.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Connect_type_IdId");
+                    b.HasIndex("Connect_type_Id");
 
                     b.HasIndex("Supplier_Id");
 
@@ -465,7 +481,9 @@ namespace Api.Data_helper.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Addresses_Id");
+                    b.HasIndex("Addresses_Id")
+                        .IsUnique()
+                        .HasFilter("[Addresses_Id] IS NOT NULL");
 
                     b.ToTable("tbUser");
                 });
@@ -492,14 +510,21 @@ namespace Api.Data_helper.Migrations
                     b.Navigation("Package");
                 });
 
-            modelBuilder.Entity("Lib.Entities.Duration_detail", b =>
+            modelBuilder.Entity("Lib.Entities.Duration_callCharges", b =>
                 {
+                    b.HasOne("Lib.Entities.Call_charges", "Call_charges")
+                        .WithMany("Duration_callChargeses")
+                        .HasForeignKey("Call_charges_Id")
+                        .HasConstraintName("FK_Duration_callCharges_CallCharges");
+
                     b.HasOne("Lib.Entities.Duration", "Duration")
-                        .WithMany("Duration_details")
+                        .WithMany("Duration_callChargeses")
                         .HasForeignKey("Duration_Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("FK_Duration_detail_Duration");
+                        .HasConstraintName("FK_Duration_callCharges_Duration");
+
+                    b.Navigation("Call_charges");
 
                     b.Navigation("Duration");
                 });
@@ -537,38 +562,29 @@ namespace Api.Data_helper.Migrations
             modelBuilder.Entity("Lib.Entities.Order", b =>
                 {
                     b.HasOne("Lib.Entities.Coupon", "Coupon")
-                        .WithMany("Orders")
-                        .HasForeignKey("Coupon_Id")
+                        .WithOne("Order")
+                        .HasForeignKey("Lib.Entities.Order", "Coupon_Id")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired()
                         .HasConstraintName("FK_Order_Coupon");
 
-                    b.HasOne("Lib.Entities.Duration", "Duration")
+                    b.HasOne("Lib.Entities.Duration_callCharges", "Duration_callCharges")
                         .WithMany("Orders")
-                        .HasForeignKey("Duration_Id")
-                        .OnDelete(DeleteBehavior.NoAction)
+                        .HasForeignKey("Duration_callCharges_Id")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("FK_Order_Duration");
 
-                    b.HasOne("Lib.Entities.Duration_detail", "Duration_detail")
-                        .WithMany("Orders")
-                        .HasForeignKey("Duration_detail_Id")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired()
-                        .HasConstraintName("FK_Order_Duration_detail");
-
                     b.HasOne("Lib.Entities.TP_contractor", "TP_contractor")
-                        .WithMany("Orders")
-                        .HasForeignKey("TP_contractor_Id")
+                        .WithOne("Order")
+                        .HasForeignKey("Lib.Entities.Order", "TP_contractor_Id")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired()
                         .HasConstraintName("FK_Order_TP_contractor");
 
                     b.Navigation("Coupon");
 
-                    b.Navigation("Duration");
-
-                    b.Navigation("Duration_detail");
+                    b.Navigation("Duration_callCharges");
 
                     b.Navigation("TP_contractor");
                 });
@@ -588,8 +604,8 @@ namespace Api.Data_helper.Migrations
             modelBuilder.Entity("Lib.Entities.Payment", b =>
                 {
                     b.HasOne("Lib.Entities.Order", "Order")
-                        .WithMany("Payments")
-                        .HasForeignKey("Order_Id")
+                        .WithOne("Payment")
+                        .HasForeignKey("Lib.Entities.Payment", "Order_Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("FK_Payment_Order");
@@ -599,11 +615,12 @@ namespace Api.Data_helper.Migrations
 
             modelBuilder.Entity("Lib.Entities.Product", b =>
                 {
-                    b.HasOne("Lib.Entities.Connect_type", "Connect_type_Id")
-                        .WithMany()
-                        .HasForeignKey("Connect_type_IdId")
+                    b.HasOne("Lib.Entities.Connect_type", "Connect_type")
+                        .WithMany("Products")
+                        .HasForeignKey("Connect_type_Id")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .IsRequired()
+                        .HasConstraintName("FK_Product_ConnectType");
 
                     b.HasOne("Lib.Entities.Supplier", "Supplier")
                         .WithMany("Products")
@@ -612,7 +629,7 @@ namespace Api.Data_helper.Migrations
                         .IsRequired()
                         .HasConstraintName("FK_Product_Supplier");
 
-                    b.Navigation("Connect_type_Id");
+                    b.Navigation("Connect_type");
 
                     b.Navigation("Supplier");
                 });
@@ -642,8 +659,8 @@ namespace Api.Data_helper.Migrations
             modelBuilder.Entity("Lib.Entities.User", b =>
                 {
                     b.HasOne("Lib.Entities.Addresses", "Addresses")
-                        .WithMany("Users")
-                        .HasForeignKey("Addresses_Id")
+                        .WithOne("User")
+                        .HasForeignKey("Lib.Entities.User", "Addresses_Id")
                         .HasConstraintName("FK_User_Address");
 
                     b.Navigation("Addresses");
@@ -660,27 +677,32 @@ namespace Api.Data_helper.Migrations
 
                     b.Navigation("TP_contractors");
 
-                    b.Navigation("Users");
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Lib.Entities.Call_charges", b =>
+                {
+                    b.Navigation("Duration_callChargeses");
                 });
 
             modelBuilder.Entity("Lib.Entities.Connect_type", b =>
                 {
                     b.Navigation("Packages");
+
+                    b.Navigation("Products");
                 });
 
             modelBuilder.Entity("Lib.Entities.Coupon", b =>
                 {
-                    b.Navigation("Orders");
+                    b.Navigation("Order");
                 });
 
             modelBuilder.Entity("Lib.Entities.Duration", b =>
                 {
-                    b.Navigation("Duration_details");
-
-                    b.Navigation("Orders");
+                    b.Navigation("Duration_callChargeses");
                 });
 
-            modelBuilder.Entity("Lib.Entities.Duration_detail", b =>
+            modelBuilder.Entity("Lib.Entities.Duration_callCharges", b =>
                 {
                     b.Navigation("Orders");
                 });
@@ -692,7 +714,7 @@ namespace Api.Data_helper.Migrations
 
             modelBuilder.Entity("Lib.Entities.Order", b =>
                 {
-                    b.Navigation("Payments");
+                    b.Navigation("Payment");
                 });
 
             modelBuilder.Entity("Lib.Entities.Package", b =>
@@ -712,7 +734,7 @@ namespace Api.Data_helper.Migrations
 
             modelBuilder.Entity("Lib.Entities.TP_contractor", b =>
                 {
-                    b.Navigation("Orders");
+                    b.Navigation("Order");
                 });
 
             modelBuilder.Entity("Lib.Entities.User", b =>

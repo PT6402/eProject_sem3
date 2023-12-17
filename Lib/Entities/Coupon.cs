@@ -10,6 +10,6 @@ namespace Lib.Entities
         public int Id { get; set; }
         public int Range_Connect { get; set; }
         public float Percent { get; set; }
-        public ICollection<Order>? Orders { get; set; }
+        public Order? Order { get; set; }
     }
 }

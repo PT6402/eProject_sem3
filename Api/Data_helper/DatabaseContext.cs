@@ -19,7 +19,7 @@ namespace Api.Data_helper
         public DbSet<Stories> Product_changes { get; set; }
         public DbSet<Package> Category { get; set; }
         public DbSet<Duration> SubCategories { get; set; }
-        public DbSet<Duration_detail> Detail_Subs { get; set; }
+        public DbSet<Call_charges> Detail_Subs { get; set; }
         public DbSet<Order> Order { get; set; }
         public DbSet<Payment> Payment { get; set; }
         public DbSet<Coupon> Coupon { get; set; }
@@ -86,35 +86,41 @@ namespace Api.Data_helper
                 .HasConstraintName("FK_Duration_Package");
             });
 
-            modelBuilder.Entity<Duration_detail>(entity =>
+            modelBuilder.Entity<Duration_callCharges>(entity =>
             {
                 entity
                 .HasOne(x => x.Duration)
-                .WithMany(x => x.Duration_details)
+                .WithMany(x => x.Duration_callChargeses)
                 .HasForeignKey(x => x.Duration_Id)
-                .HasConstraintName("FK_Duration_detail_Duration");
+                .HasConstraintName("FK_Duration_callCharges_Duration");
+
+                entity
+                .HasOne(x => x.Call_charges)
+                .WithMany(x => x.Duration_callChargeses)
+                .HasForeignKey(x => x.Call_charges_Id)
+                .HasConstraintName("FK_Duration_callCharges_CallCharges");
             });
 
             modelBuilder.Entity<Order>(entity =>
             {
                 entity
-                .HasOne(x => x.Duration)
+                .HasOne(x => x.Duration_callCharges)
                 .WithMany(x => x.Orders)
-                .HasForeignKey(x => x.Duration_Id)
+                .HasForeignKey(x => x.Duration_callCharges_Id)
                 .HasConstraintName("FK_Order_Duration")
-                .OnDelete(DeleteBehavior.NoAction);
+                .OnDelete(DeleteBehavior.Cascade);
 
                 entity
                 .HasOne(x => x.TP_contractor)
-                .WithMany(x => x.Orders)
-                .HasForeignKey(x => x.TP_contractor_Id)
+                .WithOne(x => x.Order)
+                .HasForeignKey<Order>(x => x.TP_contractor_Id)
                 .HasConstraintName("FK_Order_TP_contractor")
                 .OnDelete(DeleteBehavior.NoAction);
 
                 entity
                 .HasOne(x => x.Coupon)
-                .WithMany(x => x.Orders)
-                .HasForeignKey(x => x.Coupon_Id)
+                .WithOne(x => x.Order)
+                .HasForeignKey<Order>(x => x.Coupon_Id)
                 .HasConstraintName("FK_Order_Coupon")
                 .OnDelete(DeleteBehavior.NoAction);
             });
@@ -123,8 +129,8 @@ namespace Api.Data_helper
             {
                 entity
                 .HasOne(x => x.Order)
-                .WithMany(x => x.Payments)
-                .HasForeignKey(x => x.Order_Id)
+                .WithOne(x => x.Payment)
+                .HasForeignKey<Payment>(x => x.Order_Id)
                 .HasConstraintName("FK_Payment_Order");
             });
 
@@ -132,8 +138,8 @@ namespace Api.Data_helper
             {
                 entity
                 .HasOne(x => x.Addresses)
-                .WithMany(x => x.Users)
-                .HasForeignKey(x => x.Addresses_Id)
+                .WithOne(x => x.User)
+                .HasForeignKey<User>(x => x.Addresses_Id)
                 .HasConstraintName("FK_User_Address");
             });
 
@@ -154,6 +160,15 @@ namespace Api.Data_helper
                 .HasForeignKey(x => x.Addresses_Id)
                 .HasConstraintName("FK_Contractor_Address");
             });
+
+            modelBuilder.Entity<Product>(entity =>
+           {
+               entity
+               .HasOne(x => x.Connect_type)
+               .WithMany(x => x.Products)
+               .HasForeignKey(x => x.Connect_type_Id)
+               .HasConstraintName("FK_Product_ConnectType");
+           });
 
 
 

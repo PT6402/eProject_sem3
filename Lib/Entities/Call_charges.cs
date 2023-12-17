@@ -3,16 +3,15 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Lib.Entities
 {
-    [Table("tbDuration_detail")]
-    public class Duration_detail
+    [Table("tbCall_charges")]
+    public class Call_charges
     {
         [Key]
         public int Id { get; set; }
-        public int Duration_Id { get; set; }
-        public Duration? Duration { get; set; }
         public string Name { get; set; } = null!;
         public float Price { get; set; }
         public string Unit { get; set; } = null!;
-        public ICollection<Order>? Orders { get; set; }
+        public ICollection<Duration_callCharges>? Duration_callChargeses { get; set; }
+
     }
 }

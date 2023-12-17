@@ -18,7 +18,7 @@ namespace Lib.Entities
         public string District { get; set; } = null!;
         public string Ward { get; set; } = null!;
 
-        public ICollection<User>? Users { get; set; }
+        public User? User { get; set; }
         public ICollection<Address_store>? Address_stores { get; set; }
         public ICollection<TP_contractor>? TP_contractors { get; set; }
 

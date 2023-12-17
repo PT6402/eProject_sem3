@@ -8,8 +8,11 @@ namespace Lib.Entities
     {
         [Key]
         public int Id { get; set; }
-        public Order Order { get; set; } = null!;
+
+        [Required]
         public string Order_Id { get; set; } = null!;
+        public Order? Order { get; set; }
+
         public string Method_Payment { get; set; } = null!;
         public bool Status { get; set; }
     }

@@ -28,6 +28,21 @@ namespace Api.Data_helper.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "tbCall_charges",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Price = table.Column<float>(type: "real", nullable: false),
+                    Unit = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_tbCall_charges", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "tbConnect_type",
                 columns: table => new
                 {
@@ -131,14 +146,15 @@ namespace Api.Data_helper.Migrations
                     Phone = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Email = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Addresses_Id = table.Column<int>(type: "int", nullable: true),
+                    Role = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     PasswordHash = table.Column<byte[]>(type: "varbinary(max)", nullable: false),
                     PasswordSalt = table.Column<byte[]>(type: "varbinary(max)", nullable: false),
-                    Role = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     RefreshToken = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     TokenCreated = table.Column<DateTime>(type: "datetime2", nullable: true),
                     TokenExpires = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    PasswordResetToken = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    ResetTokenExpires = table.Column<DateTime>(type: "datetime2", nullable: true)
+                    PasswordReset = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ResetExpires = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    MethodReset = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -276,21 +292,24 @@ namespace Api.Data_helper.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "tbDuration_detail",
+                name: "tbDuration_callCharges",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Duration_Id = table.Column<int>(type: "int", nullable: false),
-                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Price = table.Column<float>(type: "real", nullable: false),
-                    Unit = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    Call_charges_Id = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_tbDuration_detail", x => x.Id);
+                    table.PrimaryKey("PK_tbDuration_callCharges", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Duration_detail_Duration",
+                        name: "FK_Duration_callCharges_CallCharges",
+                        column: x => x.Call_charges_Id,
+                        principalTable: "tbCall_charges",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_Duration_callCharges_Duration",
                         column: x => x.Duration_Id,
                         principalTable: "tbDuration",
                         principalColumn: "Id",
@@ -305,10 +324,9 @@ namespace Api.Data_helper.Migrations
                     Status = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Tax = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Total_Price = table.Column<float>(type: "real", nullable: false),
-                    TP_contractor_Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     Coupon_Id = table.Column<int>(type: "int", nullable: false),
-                    Duration_detail_Id = table.Column<int>(type: "int", nullable: false),
-                    Duration_Id = table.Column<int>(type: "int", nullable: false)
+                    TP_contractor_Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    Duration_callCharges_Id = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -320,14 +338,10 @@ namespace Api.Data_helper.Migrations
                         principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_Order_Duration",
-                        column: x => x.Duration_Id,
-                        principalTable: "tbDuration",
-                        principalColumn: "Id");
-                    table.ForeignKey(
-                        name: "FK_Order_Duration_detail",
-                        column: x => x.Duration_detail_Id,
-                        principalTable: "tbDuration_detail",
-                        principalColumn: "Id");
+                        column: x => x.Duration_callCharges_Id,
+                        principalTable: "tbDuration_callCharges",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_Order_TP_contractor",
                         column: x => x.TP_contractor_Id,
@@ -367,8 +381,13 @@ namespace Api.Data_helper.Migrations
                 column: "Package_Id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_tbDuration_detail_Duration_Id",
-                table: "tbDuration_detail",
+                name: "IX_tbDuration_callCharges_Call_charges_Id",
+                table: "tbDuration_callCharges",
+                column: "Call_charges_Id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_tbDuration_callCharges_Duration_Id",
+                table: "tbDuration_callCharges",
                 column: "Duration_Id");
 
             migrationBuilder.CreateIndex(
@@ -389,22 +408,19 @@ namespace Api.Data_helper.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_tbOrders_Coupon_Id",
                 table: "tbOrders",
-                column: "Coupon_Id");
+                column: "Coupon_Id",
+                unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_tbOrders_Duration_detail_Id",
+                name: "IX_tbOrders_Duration_callCharges_Id",
                 table: "tbOrders",
-                column: "Duration_detail_Id");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_tbOrders_Duration_Id",
-                table: "tbOrders",
-                column: "Duration_Id");
+                column: "Duration_callCharges_Id");
 
             migrationBuilder.CreateIndex(
                 name: "IX_tbOrders_TP_contractor_Id",
                 table: "tbOrders",
-                column: "TP_contractor_Id");
+                column: "TP_contractor_Id",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_tbPackage_Connect_type_Id",
@@ -414,7 +430,8 @@ namespace Api.Data_helper.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_tbPayment_Order_Id",
                 table: "tbPayment",
-                column: "Order_Id");
+                column: "Order_Id",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_tbProduct_Connect_type_IdId",
@@ -439,7 +456,9 @@ namespace Api.Data_helper.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_tbUser_Addresses_Id",
                 table: "tbUser",
-                column: "Addresses_Id");
+                column: "Addresses_Id",
+                unique: true,
+                filter: "[Addresses_Id] IS NOT NULL");
         }
 
         /// <inheritdoc />
@@ -473,13 +492,16 @@ namespace Api.Data_helper.Migrations
                 name: "tbCoupon");
 
             migrationBuilder.DropTable(
-                name: "tbDuration_detail");
+                name: "tbDuration_callCharges");
 
             migrationBuilder.DropTable(
                 name: "tbTP_contractor");
 
             migrationBuilder.DropTable(
                 name: "tbSupplier");
+
+            migrationBuilder.DropTable(
+                name: "tbCall_charges");
 
             migrationBuilder.DropTable(
                 name: "tbDuration");

@@ -12,7 +12,7 @@ namespace Lib.Entities
         public Package? Package { get; set; }
         public DateTime Time { get; set; }
         public float Price { get; set; }
-        public ICollection<Duration_detail>? Duration_details { get; set; }
-        public ICollection<Order>? Orders { get; set; }
+        public ICollection<Duration_callCharges>? Duration_callChargeses { get; set; }
+
     }
 }
