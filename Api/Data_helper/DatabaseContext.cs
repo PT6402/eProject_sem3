@@ -134,24 +134,6 @@ namespace Api.Data_helper
                 .HasConstraintName("FK_Payment_Order");
             });
 
-            modelBuilder.Entity<User>(entity =>
-            {
-                entity
-                .HasOne(x => x.Addresses)
-                .WithOne(x => x.User)
-                .HasForeignKey<User>(x => x.Addresses_Id)
-                .HasConstraintName("FK_User_Address");
-            });
-
-            modelBuilder.Entity<Address_store>(entity =>
-            {
-                entity
-                .HasOne(x => x.Addresses)
-                .WithMany(x => x.Address_stores)
-                .HasForeignKey(x => x.Addresses_Id)
-                .HasConstraintName("FK_Store_Address");
-            });
-
             modelBuilder.Entity<TP_contractor>(entity =>
             {
                 entity
