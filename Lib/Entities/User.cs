@@ -11,8 +11,6 @@ namespace Lib.Entities
         public string FullName { get; set; } = null!;
         public string Phone { get; set; } = null!;
         public string? Email { get; set; }
-        public Addresses? Addresses { get; set; }
-        public int? Addresses_Id { get; set; }
         //
         public string Role { get; set; } = null!;
 
@@ -31,6 +29,7 @@ namespace Lib.Entities
         public int? MethodReset { get; set; }
 
         public ICollection<Employee>? Employees { get; set; }
+        public ICollection<TP_contractor>? TP_contractors { get; set; }
 
 
         public User()

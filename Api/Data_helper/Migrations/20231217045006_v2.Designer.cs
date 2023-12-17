@@ -4,6 +4,7 @@ using Api.Data_helper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Api.Data_helper.Migrations
 {
     [DbContext(typeof(DatabaseContext))]
-    partial class DatabaseContextModelSnapshot : ModelSnapshot
+    [Migration("20231217045006_v2")]
+    partial class v2
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -30,15 +33,14 @@ namespace Api.Data_helper.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("Region_code")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Region_name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int?>("Addresses_Id")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("Addresses_Id")
+                        .IsUnique()
+                        .HasFilter("[Addresses_Id] IS NOT NULL");
 
                     b.ToTable("tbAddress_store");
                 });
@@ -203,7 +205,7 @@ namespace Api.Data_helper.Migrations
                     b.Property<int>("Employee_type_Id")
                         .HasColumnType("int");
 
-                    b.Property<int>("User_Id")
+                    b.Property<int>("UserId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
@@ -212,7 +214,7 @@ namespace Api.Data_helper.Migrations
 
                     b.HasIndex("Employee_type_Id");
 
-                    b.HasIndex("User_Id");
+                    b.HasIndex("UserId");
 
                     b.ToTable("tbEmployee");
                 });
@@ -239,7 +241,7 @@ namespace Api.Data_helper.Migrations
                     b.Property<string>("Id")
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<int?>("Coupon_Id")
+                    b.Property<int>("Coupon_Id")
                         .HasColumnType("int");
 
                     b.Property<int>("Duration_callCharges_Id")
@@ -266,48 +268,13 @@ namespace Api.Data_helper.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("Coupon_Id")
-                        .IsUnique()
-                        .HasFilter("[Coupon_Id] IS NOT NULL");
+                        .IsUnique();
 
                     b.HasIndex("Duration_callCharges_Id");
 
-                    b.HasIndex("TP_contractor_Id")
-                        .IsUnique();
+                    b.HasIndex("TP_contractor_Id");
 
                     b.ToTable("tbOrders");
-                });
-
-            modelBuilder.Entity("Lib.Entities.Order_handler", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("Address_store_Id")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("Employee_Id")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Order_Id")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<bool>("StatusHandle")
-                        .HasColumnType("bit");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Address_store_Id");
-
-                    b.HasIndex("Employee_Id");
-
-                    b.HasIndex("Order_Id")
-                        .IsUnique();
-
-                    b.ToTable("Order_handler");
                 });
 
             modelBuilder.Entity("Lib.Entities.Package", b =>
@@ -449,18 +416,22 @@ namespace Api.Data_helper.Migrations
                     b.Property<string>("Id")
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<int>("Addresses_Id")
+                    b.Property<int?>("Addresses_Id")
                         .HasColumnType("int");
 
-                    b.Property<int>("User_Id")
-                        .HasColumnType("int");
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Phone")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
                     b.HasIndex("Addresses_Id")
-                        .IsUnique();
-
-                    b.HasIndex("User_Id");
+                        .IsUnique()
+                        .HasFilter("[Addresses_Id] IS NOT NULL");
 
                     b.ToTable("tbTP_contractor");
                 });
@@ -472,6 +443,9 @@ namespace Api.Data_helper.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int?>("Addresses_Id")
+                        .HasColumnType("int");
 
                     b.Property<string>("Email")
                         .HasColumnType("nvarchar(max)");
@@ -516,7 +490,21 @@ namespace Api.Data_helper.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("Addresses_Id")
+                        .IsUnique()
+                        .HasFilter("[Addresses_Id] IS NOT NULL");
+
                     b.ToTable("tbUser");
+                });
+
+            modelBuilder.Entity("Lib.Entities.Address_store", b =>
+                {
+                    b.HasOne("Lib.Entities.Addresses", "Addresses")
+                        .WithOne("Address_store")
+                        .HasForeignKey("Lib.Entities.Address_store", "Addresses_Id")
+                        .HasConstraintName("FK_Store_Address");
+
+                    b.Navigation("Addresses");
                 });
 
             modelBuilder.Entity("Lib.Entities.Duration", b =>
@@ -568,7 +556,7 @@ namespace Api.Data_helper.Migrations
 
                     b.HasOne("Lib.Entities.User", "User")
                         .WithMany("Employees")
-                        .HasForeignKey("User_Id")
+                        .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("FK_Emp_User");
@@ -586,6 +574,7 @@ namespace Api.Data_helper.Migrations
                         .WithOne("Order")
                         .HasForeignKey("Lib.Entities.Order", "Coupon_Id")
                         .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired()
                         .HasConstraintName("FK_Order_Coupon");
 
                     b.HasOne("Lib.Entities.Duration_callCharges", "Duration_callCharges")
@@ -596,8 +585,8 @@ namespace Api.Data_helper.Migrations
                         .HasConstraintName("FK_Order_Duration");
 
                     b.HasOne("Lib.Entities.TP_contractor", "TP_contractor")
-                        .WithOne("Order")
-                        .HasForeignKey("Lib.Entities.Order", "TP_contractor_Id")
+                        .WithMany("Orders")
+                        .HasForeignKey("TP_contractor_Id")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired()
                         .HasConstraintName("FK_Order_TP_contractor");
@@ -607,34 +596,6 @@ namespace Api.Data_helper.Migrations
                     b.Navigation("Duration_callCharges");
 
                     b.Navigation("TP_contractor");
-                });
-
-            modelBuilder.Entity("Lib.Entities.Order_handler", b =>
-                {
-                    b.HasOne("Lib.Entities.Address_store", "Address_store")
-                        .WithMany("Order_handlers")
-                        .HasForeignKey("Address_store_Id")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("FK_Order_handle_Address_store");
-
-                    b.HasOne("Lib.Entities.Employee", "Employee")
-                        .WithMany("Order_handlers")
-                        .HasForeignKey("Employee_Id")
-                        .HasConstraintName("FK_Order_handle_Employee");
-
-                    b.HasOne("Lib.Entities.Order", "Order")
-                        .WithOne("Order_handler")
-                        .HasForeignKey("Lib.Entities.Order_handler", "Order_Id")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("FK_Order_handle_Order");
-
-                    b.Navigation("Address_store");
-
-                    b.Navigation("Employee");
-
-                    b.Navigation("Order");
                 });
 
             modelBuilder.Entity("Lib.Entities.Package", b =>
@@ -699,32 +660,33 @@ namespace Api.Data_helper.Migrations
                     b.HasOne("Lib.Entities.Addresses", "Addresses")
                         .WithOne("TP_contractor")
                         .HasForeignKey("Lib.Entities.TP_contractor", "Addresses_Id")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
                         .HasConstraintName("FK_Contractor_Address");
 
-                    b.HasOne("Lib.Entities.User", "User")
-                        .WithMany("TP_contractors")
-                        .HasForeignKey("User_Id")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("FK_Contractor_User");
+                    b.Navigation("Addresses");
+                });
+
+            modelBuilder.Entity("Lib.Entities.User", b =>
+                {
+                    b.HasOne("Lib.Entities.Addresses", "Addresses")
+                        .WithOne("User")
+                        .HasForeignKey("Lib.Entities.User", "Addresses_Id")
+                        .HasConstraintName("FK_User_Address");
 
                     b.Navigation("Addresses");
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Lib.Entities.Address_store", b =>
                 {
                     b.Navigation("Employees");
-
-                    b.Navigation("Order_handlers");
                 });
 
             modelBuilder.Entity("Lib.Entities.Addresses", b =>
                 {
+                    b.Navigation("Address_store");
+
                     b.Navigation("TP_contractor");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Lib.Entities.Call_charges", b =>
@@ -754,11 +716,6 @@ namespace Api.Data_helper.Migrations
                     b.Navigation("Orders");
                 });
 
-            modelBuilder.Entity("Lib.Entities.Employee", b =>
-                {
-                    b.Navigation("Order_handlers");
-                });
-
             modelBuilder.Entity("Lib.Entities.Employee_type", b =>
                 {
                     b.Navigation("Employees");
@@ -766,8 +723,6 @@ namespace Api.Data_helper.Migrations
 
             modelBuilder.Entity("Lib.Entities.Order", b =>
                 {
-                    b.Navigation("Order_handler");
-
                     b.Navigation("Payment");
                 });
 
@@ -788,14 +743,12 @@ namespace Api.Data_helper.Migrations
 
             modelBuilder.Entity("Lib.Entities.TP_contractor", b =>
                 {
-                    b.Navigation("Order");
+                    b.Navigation("Orders");
                 });
 
             modelBuilder.Entity("Lib.Entities.User", b =>
                 {
                     b.Navigation("Employees");
-
-                    b.Navigation("TP_contractors");
                 });
 #pragma warning restore 612, 618
         }

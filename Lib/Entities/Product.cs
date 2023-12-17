@@ -11,6 +11,7 @@ namespace Lib.Entities
         public string Name { get; set; } = null!;
         public string Seri { get; set; } = null!;
         public int Quantity { get; set; }
+        public int Numb_Connect { get; set; }
 
         [Required]
         public int Connect_type_Id { get; set; }

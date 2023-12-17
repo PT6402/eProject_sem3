@@ -4,6 +4,7 @@ using Api.Data_helper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Api.Data_helper.Migrations
 {
     [DbContext(typeof(DatabaseContext))]
-    partial class DatabaseContextModelSnapshot : ModelSnapshot
+    [Migration("20231217084007_v3")]
+    partial class v3
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -271,8 +274,7 @@ namespace Api.Data_helper.Migrations
 
                     b.HasIndex("Duration_callCharges_Id");
 
-                    b.HasIndex("TP_contractor_Id")
-                        .IsUnique();
+                    b.HasIndex("TP_contractor_Id");
 
                     b.ToTable("tbOrders");
                 });
@@ -449,18 +451,22 @@ namespace Api.Data_helper.Migrations
                     b.Property<string>("Id")
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<int>("Addresses_Id")
+                    b.Property<int?>("Addresses_Id")
                         .HasColumnType("int");
 
-                    b.Property<int>("User_Id")
-                        .HasColumnType("int");
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Phone")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
                     b.HasIndex("Addresses_Id")
-                        .IsUnique();
-
-                    b.HasIndex("User_Id");
+                        .IsUnique()
+                        .HasFilter("[Addresses_Id] IS NOT NULL");
 
                     b.ToTable("tbTP_contractor");
                 });
@@ -472,6 +478,9 @@ namespace Api.Data_helper.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int?>("Addresses_Id")
+                        .HasColumnType("int");
 
                     b.Property<string>("Email")
                         .HasColumnType("nvarchar(max)");
@@ -515,6 +524,10 @@ namespace Api.Data_helper.Migrations
                         .HasColumnType("datetime2");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("Addresses_Id")
+                        .IsUnique()
+                        .HasFilter("[Addresses_Id] IS NOT NULL");
 
                     b.ToTable("tbUser");
                 });
@@ -596,8 +609,8 @@ namespace Api.Data_helper.Migrations
                         .HasConstraintName("FK_Order_Duration");
 
                     b.HasOne("Lib.Entities.TP_contractor", "TP_contractor")
-                        .WithOne("Order")
-                        .HasForeignKey("Lib.Entities.Order", "TP_contractor_Id")
+                        .WithMany("Orders")
+                        .HasForeignKey("TP_contractor_Id")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired()
                         .HasConstraintName("FK_Order_TP_contractor");
@@ -699,20 +712,19 @@ namespace Api.Data_helper.Migrations
                     b.HasOne("Lib.Entities.Addresses", "Addresses")
                         .WithOne("TP_contractor")
                         .HasForeignKey("Lib.Entities.TP_contractor", "Addresses_Id")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
                         .HasConstraintName("FK_Contractor_Address");
 
-                    b.HasOne("Lib.Entities.User", "User")
-                        .WithMany("TP_contractors")
-                        .HasForeignKey("User_Id")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("FK_Contractor_User");
+                    b.Navigation("Addresses");
+                });
+
+            modelBuilder.Entity("Lib.Entities.User", b =>
+                {
+                    b.HasOne("Lib.Entities.Addresses", "Addresses")
+                        .WithOne("User")
+                        .HasForeignKey("Lib.Entities.User", "Addresses_Id")
+                        .HasConstraintName("FK_User_Address");
 
                     b.Navigation("Addresses");
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Lib.Entities.Address_store", b =>
@@ -725,6 +737,8 @@ namespace Api.Data_helper.Migrations
             modelBuilder.Entity("Lib.Entities.Addresses", b =>
                 {
                     b.Navigation("TP_contractor");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Lib.Entities.Call_charges", b =>
@@ -788,14 +802,12 @@ namespace Api.Data_helper.Migrations
 
             modelBuilder.Entity("Lib.Entities.TP_contractor", b =>
                 {
-                    b.Navigation("Order");
+                    b.Navigation("Orders");
                 });
 
             modelBuilder.Entity("Lib.Entities.User", b =>
                 {
                     b.Navigation("Employees");
-
-                    b.Navigation("TP_contractors");
                 });
 #pragma warning restore 612, 618
         }

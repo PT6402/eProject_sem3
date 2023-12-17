@@ -34,7 +34,7 @@ namespace Api.Data_helper
                 entity
                 .HasOne(x => x.User)
                 .WithMany(x => x.Employees)
-                .HasForeignKey(x => x.UserId)
+                .HasForeignKey(x => x.User_Id)
                 .HasConstraintName("FK_Emp_User");
 
                 entity
@@ -123,6 +123,8 @@ namespace Api.Data_helper
                 .HasForeignKey<Order>(x => x.Coupon_Id)
                 .HasConstraintName("FK_Order_Coupon")
                 .OnDelete(DeleteBehavior.NoAction);
+
+
             });
 
             modelBuilder.Entity<Payment>(entity =>
@@ -138,9 +140,15 @@ namespace Api.Data_helper
             {
                 entity
                 .HasOne(x => x.Addresses)
-                .WithMany(x => x.TP_contractors)
-                .HasForeignKey(x => x.Addresses_Id)
+                .WithOne(x => x.TP_contractor)
+                .HasForeignKey<TP_contractor>(x => x.Addresses_Id)
                 .HasConstraintName("FK_Contractor_Address");
+
+                entity
+                .HasOne(x => x.User)
+                .WithMany(x => x.TP_contractors)
+                .HasForeignKey(x => x.User_Id)
+                .HasConstraintName("FK_Contractor_User");
             });
 
             modelBuilder.Entity<Product>(entity =>
@@ -150,6 +158,28 @@ namespace Api.Data_helper
                .WithMany(x => x.Products)
                .HasForeignKey(x => x.Connect_type_Id)
                .HasConstraintName("FK_Product_ConnectType");
+           });
+
+            modelBuilder.Entity<Order_handler>(entity =>
+           {
+               entity
+               .HasOne(x => x.Order)
+               .WithOne(x => x.Order_handler)
+               .HasForeignKey<Order_handler>(x => x.Order_Id)
+               .HasConstraintName("FK_Order_handle_Order");
+
+               entity
+               .HasOne(x => x.Address_store)
+               .WithMany(x => x.Order_handlers)
+               .HasForeignKey(x => x.Address_store_Id)
+               .HasConstraintName("FK_Order_handle_Address_store");
+
+               entity
+               .HasOne(x => x.Employee)
+               .WithMany(x => x.Order_handlers)
+               .HasForeignKey(x => x.Employee_Id)
+               .HasConstraintName("FK_Order_handle_Employee");
+
            });
 
 

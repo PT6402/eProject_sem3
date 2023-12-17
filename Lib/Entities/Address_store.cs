@@ -8,8 +8,12 @@ namespace Lib.Entities
     {
         [Key]
         public int Id { get; set; }
-        public Addresses? Addresses { get; set; }
-        public int? Addresses_Id { get; set; }
+        [Required]
+        public string Region_name { get; set; } = null!;
+        [Required]
+        public string Region_code { get; set; } = null!;
+
         public ICollection<Employee>? Employees { get; set; }
+        public ICollection<Order_handler>? Order_handlers { get; set; }
     }
 }

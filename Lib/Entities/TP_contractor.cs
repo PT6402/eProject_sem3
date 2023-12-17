@@ -8,10 +8,15 @@ namespace Lib.Entities
     {
         [Key]
         public string Id { get; set; } = null!;
-        public string Name { get; set; } = null!;
+
+        [Required]
+        public int User_Id { get; set; }
+        public User? User { get; set; }
+
+        [Required]
+        public int Addresses_Id { get; set; }
         public Addresses? Addresses { get; set; }
-        public int? Addresses_Id { get; set; }
-        public string Phone { get; set; } = null!;
+
         public Order? Order { get; set; }
     }
 }
