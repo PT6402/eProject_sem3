@@ -105,14 +105,6 @@ namespace Api.Data_helper
                 .OnDelete(DeleteBehavior.NoAction);
 
                 entity
-                .HasOne(x => x.Duration_detail)
-                .WithMany(x => x.Orders)
-                .HasForeignKey(x => x.Duration_detail_Id)
-                .HasConstraintName("FK_Order_Duration_detail")
-                .OnDelete(DeleteBehavior.NoAction);
-
-
-                entity
                 .HasOne(x => x.TP_contractor)
                 .WithMany(x => x.Orders)
                 .HasForeignKey(x => x.TP_contractor_Id)
