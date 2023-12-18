@@ -14,17 +14,19 @@ namespace Api.Data_helper
         public DbSet<Address_store> Address_stores { get; set; }
         public DbSet<Employee> Employees { get; set; }
         public DbSet<Connect_type> Connect_types { get; set; }
-        public DbSet<Supplier> Vendors { get; set; }
+        public DbSet<Supplier> Suppliers { get; set; }
         public DbSet<Product> Products { get; set; }
-        public DbSet<Stories> Product_changes { get; set; }
-        public DbSet<Package> Category { get; set; }
-        public DbSet<Duration> SubCategories { get; set; }
-        public DbSet<Call_charges> Detail_Subs { get; set; }
+        public DbSet<Stories> Stories { get; set; }
+        public DbSet<Package> Packages { get; set; }
+        public DbSet<Duration> Durations { get; set; }
+        public DbSet<Call_charges> Call_charges { get; set; }
         public DbSet<Order> Order { get; set; }
         public DbSet<Payment> Payment { get; set; }
         public DbSet<Coupon> Coupon { get; set; }
         public DbSet<TP_contractor> Info_users { get; set; }
-
+        public DbSet<Addresses> Addresses { get; set; }
+        public DbSet<Order_handler> Order_handler { get; set; }
+        public DbSet<Duration_callCharges> Duration_callCharges { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
