@@ -11,10 +11,14 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 
+// [COOKIE]
+builder.Services.AddHttpContextAccessor();
+
+
 builder.Services
     .AddContext(builder.Configuration)
-    .AddServices()
     .AddAuth(builder.Configuration)
+    .AddServices()
     .AddRepo();
 
 // [SWAGGER]
@@ -32,6 +36,18 @@ builder.Services.AddSwaggerGen(o =>
     o.OperationFilter<SecurityRequirementsOperationFilter>();
 });
 
+
+// [CROS]
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(policy =>
+    {
+        policy.WithOrigins("http://localhost:3000")
+              .AllowAnyHeader()
+              .AllowAnyMethod()
+              .AllowCredentials();
+    });
+});
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

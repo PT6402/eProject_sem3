@@ -15,6 +15,10 @@ namespace Api.Controllers.Authentication
             services.AddSingleton(Options.Create(tokenSettings));
             services.Configure<TokenSettings>(configuration.GetSection(TokenSettings.SectionName));
 
+           
+           
+
+
             // [AUTHENTICATION]
             services.AddAuthentication(o =>
             {
@@ -46,20 +50,8 @@ namespace Api.Controllers.Authentication
             });
 
 
-            // [CROS]
-            services.AddCors(options =>
-            {
-                options.AddDefaultPolicy(policy =>
-                    {
-                        policy.WithOrigins("http://localhost:3000")
-                              .AllowAnyHeader()
-                              .AllowAnyMethod()
-                              .AllowCredentials();
-                    });
-            });
+           
 
-            // [COOKIE]
-            services.AddHttpContextAccessor();
             return services;
         }
     }
