@@ -10,7 +10,7 @@
 3. Nguyễn Văn Thiện (Student1408856)
 4. Trần Cao Minh Đức (Student1414362)
 ======================================= 
-Documentations: 
+Documentations: https://github.com/PT6402/eProject_sem3/tree/master/Documentation
 ======================================= 
 Published website: https://github.com/PT6402/eProject_sem3.git
 ======================================= 
